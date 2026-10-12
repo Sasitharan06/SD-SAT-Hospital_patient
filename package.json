@@ -1,0 +1,40 @@
+{
+  "name": "doctor-platform",
+  "version": "1.0.0",
+  "description": "Online Doctor Appointment & Digital Prescription Platform - Round 2 (LLD) & Round 3 (HLD)",
+  "main": "gateway/server.js",
+  "scripts": {
+    "start:gateway": "node gateway/server.js",
+    "start:patient": "node services/patient-service/src/server.js",
+    "start:doctor": "node services/doctor-service/src/server.js",
+    "start:appointment": "node services/appointment-service/src/server.js",
+    "start:prescription": "node services/prescription-service/src/server.js",
+    "start:notification": "node services/notification-service/src/server.js",
+    "start:backend": "concurrently -n \"GATEWAY,PATIENT,DOCTOR,APPT,PRESC,NOTIF\" -c \"magenta,blue,cyan,green,yellow,red\" \"npm run start:gateway\" \"npm run start:patient\" \"npm run start:doctor\" \"npm run start:appointment\" \"npm run start:prescription\" \"npm run start:notification\"",
+    "start:frontend": "npm --prefix frontend run dev",
+    "start": "concurrently -n \"BACKEND,FRONTEND\" -c \"cyan,magenta\" \"npm run start:backend\" \"npm run start:frontend\"",
+    "test": "node tests/run-all-tests.js",
+    "db:seed": "node database/seed.js"
+  },
+  "keywords": [
+    "doctor-appointment",
+    "microservices",
+    "api-gateway",
+    "system-design",
+    "lld",
+    "hld"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "http-proxy-middleware": "^3.0.3",
+    "pg": "^8.13.1",
+    "uuid": "^11.0.5"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

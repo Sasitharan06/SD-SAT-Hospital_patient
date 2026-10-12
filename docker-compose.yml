@@ -1,0 +1,135 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: doctor-platform-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: doctor_platform
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d doctor_platform"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: doctor-platform-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: doctor-platform-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    container_name: doctor-platform-gateway
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - PATIENT_SERVICE_URL=http://patient-service:3001
+      - DOCTOR_SERVICE_URL=http://doctor-service:3002
+      - APPOINTMENT_SERVICE_URL=http://appointment-service:3003
+      - PRESCRIPTION_SERVICE_URL=http://prescription-service:3004
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3005
+    depends_on:
+      - patient-service
+      - doctor-service
+      - appointment-service
+      - prescription-service
+      - notification-service
+
+  patient-service:
+    build:
+      context: .
+      dockerfile: services/patient-service/Dockerfile
+    container_name: doctor-platform-patient
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - DATABASE_URL=postgres://postgres:postgrespassword@postgres:5432/doctor_platform
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  doctor-service:
+    build:
+      context: .
+      dockerfile: services/doctor-service/Dockerfile
+    container_name: doctor-platform-doctor
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - DATABASE_URL=postgres://postgres:postgrespassword@postgres:5432/doctor_platform
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  appointment-service:
+    build:
+      context: .
+      dockerfile: services/appointment-service/Dockerfile
+    container_name: doctor-platform-appointment
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - DATABASE_URL=postgres://postgres:postgrespassword@postgres:5432/doctor_platform
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  prescription-service:
+    build:
+      context: .
+      dockerfile: services/prescription-service/Dockerfile
+    container_name: doctor-platform-prescription
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+      - DATABASE_URL=postgres://postgres:postgrespassword@postgres:5432/doctor_platform
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    container_name: doctor-platform-notification
+    ports:
+      - "3005:3005"
+    environment:
+      - PORT=3005
+      - DATABASE_URL=postgres://postgres:postgrespassword@postgres:5432/doctor_platform
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:

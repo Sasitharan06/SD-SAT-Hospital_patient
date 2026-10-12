@@ -1,0 +1,329 @@
+{
+  "info": {
+    "_postman_id": "b3e0c7a1-8d45-4df3-bc32-9844f21d3f99",
+    "name": "Online Doctor Appointment & Digital Prescription Platform (Gateway + Microservices)",
+    "description": "Postman Collection for College Exam & System Design Viva.\nAll requests route via API Gateway at http://localhost:3000 to backend microservices.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. API Gateway & Discovery",
+      "item": [
+        {
+          "name": "Gateway Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "health"]
+            }
+          }
+        },
+        {
+          "name": "Service Registry & Live Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/gateway/services",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "gateway", "services"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Doctor Service (Port 3002 via Gateway)",
+      "item": [
+        {
+          "name": "Get All Doctors (Cached)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/doctors",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "doctors"]
+            }
+          }
+        },
+        {
+          "name": "Search Doctors by Specialty",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/doctors?specialty=Cardiology",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "doctors"],
+              "query": [
+                { "key": "specialty", "value": "Cardiology" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Doctor by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/doctors/doc-201",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "doctors", "doc-201"]
+            }
+          }
+        },
+        {
+          "name": "Get Doctor Availability Slots",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/doctors/doc-201/availability?date=2026-10-15",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "doctors", "doc-201", "availability"],
+              "query": [
+                { "key": "date", "value": "2026-10-15" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Patient Service (Port 3001 via Gateway)",
+      "item": [
+        {
+          "name": "Get All Patients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/patients",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "patients"]
+            }
+          }
+        },
+        {
+          "name": "Get Patient by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/patients/pat-101",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "patients", "pat-101"]
+            }
+          }
+        },
+        {
+          "name": "Register New Patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Siddharth Sen\",\n  \"email\": \"siddharth.sen@example.com\",\n  \"phone\": \"+91-9876500000\",\n  \"date_of_birth\": \"1996-07-22\",\n  \"gender\": \"Male\",\n  \"blood_group\": \"O+\",\n  \"address\": \"Koramangala 4th Block, Bengaluru\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/patients",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "patients"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Appointment Service (Port 3003 via Gateway)",
+      "item": [
+        {
+          "name": "Book Appointment (Valid)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient_id\": \"pat-101\",\n  \"doctor_id\": \"doc-201\",\n  \"appointment_date\": \"2026-10-25\",\n  \"appointment_time\": \"11:00 AM\",\n  \"symptoms\": \"Frequent palpitations and shortness of breath upon exertion.\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/appointments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "appointments"]
+            }
+          }
+        },
+        {
+          "name": "Book Appointment (Duplicate -> 409 Conflict Test)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient_id\": \"pat-102\",\n  \"doctor_id\": \"doc-201\",\n  \"appointment_date\": \"2026-10-25\",\n  \"appointment_time\": \"11:00 AM\",\n  \"symptoms\": \"Attempting to book already taken slot\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/appointments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "appointments"]
+            }
+          }
+        },
+        {
+          "name": "List All Appointments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/appointments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "appointments"]
+            }
+          }
+        },
+        {
+          "name": "Get Appointment by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/appointments/apt-301",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "appointments", "apt-301"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Appointment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Patient requested reschedule to next week.\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/appointments/apt-301/cancel",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "appointments", "apt-301", "cancel"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Prescription Service (Port 3004 via Gateway)",
+      "item": [
+        {
+          "name": "Issue Digital Prescription (Doctor Role)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-User-Role", "value": "DOCTOR" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointment_id\": \"apt-301\",\n  \"doctor_id\": \"doc-201\",\n  \"patient_id\": \"pat-101\",\n  \"diagnosis\": \"Mild sinus tachycardia & essential hypertension\",\n  \"notes\": \"Follow low-sodium diet and repeat lipid profile in 4 weeks.\",\n  \"medicines\": [\n    {\n      \"medicine_name\": \"Metoprolol Tartrate 25mg\",\n      \"dosage\": \"25 mg\",\n      \"frequency\": \"Twice daily\",\n      \"duration\": \"14 days\",\n      \"instructions\": \"Take after meals with warm water.\"\n    },\n    {\n      \"medicine_name\": \"Atorvastatin Calcium 10mg\",\n      \"dosage\": \"10 mg\",\n      \"frequency\": \"Once daily at bedtime\",\n      \"duration\": \"30 days\",\n      \"instructions\": \"Take at night.\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/prescriptions",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "prescriptions"]
+            }
+          }
+        },
+        {
+          "name": "Get Prescription by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/prescriptions/prx-401",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "prescriptions", "prx-401"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Notification Service (Port 3005 via Gateway)",
+      "item": [
+        {
+          "name": "Get Recent Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/notifications",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "notifications"]
+            }
+          }
+        },
+        {
+          "name": "RabbitMQ Queue Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/notifications/queue-stats",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "notifications", "queue-stats"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
